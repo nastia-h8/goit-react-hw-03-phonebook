@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { nanoid } from 'nanoid';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
 import { ContactForm } from '../ContactForm/ContactForm';
 import { ContactList } from '../ContactList/ContactList';
 import { ContactFilter } from 'components/ContactFilter/ContactFilter';
@@ -8,23 +10,35 @@ import { GlobalStyle } from 'components/GlobalStyle';
 import { Layout } from 'components/Layout';
 import { MainTitle, Title } from './App.styled';
 
+const CONTACTS_LS_KEY = 'contacts';
+
 export class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-
+    contacts: [],
     filter: '',
   };
 
-  handleFormSubmit = newContact => {
-    const isInContactList = this.checkContacts(newContact);
+  componentDidMount() {
+    const savedContacts = JSON.parse(localStorage.getItem(CONTACTS_LS_KEY));
+    if (savedContacts) this.setState({ contacts: savedContacts });
+  }
 
-    if (isInContactList) {
-      alert(`${newContact.name} is already in contacts`);
+  componentDidUpdate(_, prevState) {
+    const currentContacts = this.state.contacts;
+    if (currentContacts !== prevState.contacts)
+      localStorage.setItem(CONTACTS_LS_KEY, JSON.stringify(currentContacts));
+  }
+
+  handleFormSubmit = newContact => {
+    const isNameInContactList = this.checkContactName(newContact.name);
+    const isNumberInContactList = this.checkContactNumber(newContact.number);
+
+    if (isNameInContactList) {
+      Notify.failure(`${newContact.name} is already in contacts`);
+    } else if (isNumberInContactList) {
+      Notify.failure(
+        `This number is already saved in contacts as ${isNumberInContactList.name}`
+      );
     } else {
       this.setState(prevState => ({
         contacts: [...prevState.contacts, { id: nanoid(), ...newContact }],
@@ -32,10 +46,17 @@ export class App extends Component {
     }
   };
 
-  checkContacts = newContact => {
-    return this.state.contacts.some(
+  checkContactName = name => {
+    return this.state.contacts.find(
+      contact => contact.name.toLowerCase() === name.trim().toLowerCase()
+    );
+  };
+
+  checkContactNumber = number => {
+    const regex = /\D/g;
+    return this.state.contacts.find(
       contact =>
-        contact.name.toLowerCase() === newContact.name.trim().toLowerCase()
+        contact.number.replace(regex, '') === number.trim().replace(regex, '')
     );
   };
 

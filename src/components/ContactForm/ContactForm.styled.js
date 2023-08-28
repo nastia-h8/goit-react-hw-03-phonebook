@@ -40,6 +40,7 @@ export const Input = styled(Field)`
 
 export const Message = styled(ErrorMessage)`
   font-size: 12px;
+  color: #ff5549;
 `;
 
 export const Button = styled.button`
