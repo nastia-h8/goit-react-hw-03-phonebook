@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { nanoid } from 'nanoid';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import toast, { Toaster } from 'react-hot-toast';
 
 import { ContactForm } from '../ContactForm/ContactForm';
 import { ContactList } from '../ContactList/ContactList';
@@ -35,9 +35,9 @@ export class App extends Component {
     const isNumberInContactList = this.checkContactNumber(newContact.number);
 
     if (isNameInContactList) {
-      Notify.failure(`${newContact.name} is already in contacts`);
+      toast.error(`${newContact.name} is already in contacts`);
     } else if (isNumberInContactList) {
-      Notify.failure(
+      toast.error(
         `This number is already saved in contacts as ${isNumberInContactList.name}`
       );
     } else {
@@ -91,7 +91,7 @@ export class App extends Component {
           contacts={visibleContacts}
           onContactsDelete={this.deleteContacts}
         />
-
+        <Toaster />
         <GlobalStyle />
       </Layout>
     );
